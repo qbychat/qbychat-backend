@@ -1,0 +1,39 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    environment:
+      - 'MONGO_INITDB_ROOT_USERNAME=root'
+      - 'MONGO_INITDB_ROOT_PASSWORD=password'
+    volumes:
+      - mongo:/data/db
+    restart: always
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    command: [ "redis-server", "--appendonly", "yes" ]
+#  zookeeper:
+#    image: bitnami/zookeeper:latest
+#    container_name: pa-zookeeper
+#    restart: always
+#    environment:
+#      - ALLOW_ANONYMOUS_LOGIN=yes
+#  kafka:
+#    image: bitnami/kafka:latest
+#    container_name: kafka
+#    restart: always
+#    depends_on:
+#      - zookeeper
+#    environment:
+#      - KAFKA_BROKER_ID=1
+#      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+#      - KAFKA_LISTENERS=PLAINTEXT://:9092
+#      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+#      - ALLOW_PLAINTEXT_LISTENER=yes
+
+volumes:
+  mongo:
+    driver: local
