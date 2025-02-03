@@ -7,7 +7,7 @@ import apiRouter from "./routes/api.routes.js";
 import debug from "debug";
 import {connectToDB} from "./utils/db.js";
 import {requestLogger} from "./middlewares/logger.middleware.js";
-import {securityMatchers} from "./middlewares/auth.middleware.js";
+import {auth, authBots} from "./middlewares/auth.middleware.js";
 
 const log = debug("qbychat:server");
 
@@ -17,7 +17,8 @@ const httpServer = createServer(app);
 app.use(express.json());
 app.use(compression());
 app.use(requestLogger);
-app.use(securityMatchers)
+app.use(authBots)
+app.use(auth)
 // routes
 app.use("/api", apiRouter);
 

@@ -1,13 +1,20 @@
 import express from 'express';
 import User from "../models/user.model.js";
-import {comparePassword, generateAccessToken, hashPassword} from "../utils/auth.utils.js";
+import {
+    comparePassword,
+    generateAccessToken,
+    hashPassword,
+    resolveLocation,
+    resolvePlatform
+} from "../utils/auth.utils.js";
 import debug from "debug";
+import Session, {SessionStatus} from "../models/session.model.js";
 
 const log = debug('qbychat:controllers:user');
 
 /**
- * @param {express.Request} req
- * @param {express.Response} res
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
  * */
 export async function loginController(req, res) {
     const {username, password} = req.body
@@ -20,9 +27,23 @@ export async function loginController(req, res) {
             data: null
         })
     }
+    if (user.bot) {
+        return res.status(400).send({
+            code: 400,
+            message: 'Bots should not use this API to log in',
+            data: null
+        })
+    }
     // generate jwt
-    const token = generateAccessToken(user.id)
-    log(`User ${user.username} logged in`)
+    // create session object
+    const session = await Session.create({
+        user: user.id,
+        location: resolveLocation(req),
+        platform: resolvePlatform(req.header("User-Agent")),
+        status: SessionStatus.VALID // todo MFA
+    })
+    const token = generateAccessToken(session);
+    log(`User ${user.username} logged in`);
     res.send({
         code: 200,
         data: {
@@ -35,8 +56,8 @@ export async function loginController(req, res) {
 }
 
 /**
- * @param {express.Request} req
- * @param {express.Response} res
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
  * */
 export async function registerController(req, res) {
     const {username, password} = req.body

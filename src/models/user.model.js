@@ -6,7 +6,9 @@ const UserSchema = new mongoose.Schema({
 
     nickname: String,
     bio: String,
-    roles: [{ type: String }]
+    roles: [{ type: String }],
+
+    bot: Boolean,
     // todo settings
 });
 

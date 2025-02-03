@@ -6,8 +6,8 @@ const log = debug('qbychat:http');
 /**
  * A simple logger to record every requests
  *
- * @param {express.Request} req
- * @param {express.Response} res
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
  * @param {express.NextFunction} next
  * */
 export const requestLogger = (req, res, next) => {
