@@ -14,7 +14,7 @@ const router = express.Router();
 router.post("/login", checkSchema(loginSchema), handleValidationError, loginController);
 router.post("/register", checkSchema(registerSchema), handleValidationError, registerController);
 router.post("/refresh", refreshController);
-router.post("/logout", checkSchema(logoutSchema), logoutController);
+router.post("/logout", checkSchema(logoutSchema), handleValidationError, logoutController);
 router.get("/sessions", sessionsController);
 
 export default router;

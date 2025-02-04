@@ -1,4 +1,4 @@
-import User from "../models/user.model.js";
+import User, {UserRoles} from "../models/user.model.js";
 import {
     comparePassword,
     findAllSessions,
@@ -65,7 +65,9 @@ export async function registerController(req, res) {
         password: await hashPassword(password),
         nickname: username,
         bio: null,
-        roles: ['user']
+        roles: [
+            UserRoles.USER
+        ]
     })
     log(`User ${user.username} was registered.`)
     return res.status(201).send({
