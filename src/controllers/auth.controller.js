@@ -115,7 +115,7 @@ export async function logoutController(req, res) {
             return res.status(403).send(RestBean.error(403, 'You have no permission to terminate this session.'));
         }
     }
-    log(`Session ${targetSession} was terminated. (User ${targetSession.user.username})`);
+    log(`Session ${targetSession.id} was terminated. (User ${targetSession.user.username})`);
     // delete session
     await targetSession.deleteOne();
     res.send(RestBean.success());
