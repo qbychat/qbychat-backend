@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import geoip from "geoip-lite";
-import {Platforms} from "../models/session.model.js";
+import Session, {Platforms} from "../models/session.model.js";
+import mongoose from "mongoose";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -21,7 +22,7 @@ export function generateAccessToken(session) {
  * @param {String} rawPassword
  * */
 export async function hashPassword(rawPassword) {
-    const saltRounds = 13;
+    const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
     return await bcrypt.hash(rawPassword, saltRounds);
 }
 
@@ -123,4 +124,11 @@ export function tokenResponse(token, session, user) {
         },
         expire: decodedToken.exp
     }
+}
+
+/**
+ * @return {[Session]} sessions list
+ * */
+export async function findAllSessions(user) {
+    return Session.find({user: new mongoose.Types.ObjectId(user.id)});
 }

@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import {
     comparePassword,
+    findAllSessions,
     generateAccessToken,
     hashPassword,
     resolveLocation,
@@ -15,6 +16,8 @@ import moment from "moment";
 const log = debug('qbychat:controllers:user');
 
 /**
+ * Login
+ *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  * */
@@ -43,6 +46,8 @@ export async function loginController(req, res) {
 }
 
 /**
+ * Register a qbychat account
+ *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  * */
@@ -77,6 +82,8 @@ export async function registerController(req, res) {
 }
 
 /**
+ * Renew the token
+ *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  * */
@@ -90,6 +97,8 @@ export async function refreshController(req, res) {
 }
 
 /**
+ * Terminate a session
+ *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  * */
@@ -119,4 +128,24 @@ export async function logoutController(req, res) {
     // delete session
     await targetSession.deleteOne();
     res.send(RestBean.success());
+}
+
+/**
+ * Get all sessions
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * */
+export async function sessionsController(req, res) {
+    const sessions = await findAllSessions(req.user);
+    res.send(RestBean.success(sessions
+        .filter(session => session.status === SessionStatus.VALID)
+        .map((session) => {
+        return {
+            id: session.id,
+            location: session.location,
+            platform: session.platform,
+            timestamp: session.createAt,
+        }
+    })));
 }

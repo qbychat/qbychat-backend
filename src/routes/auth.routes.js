@@ -3,7 +3,7 @@ import {
     loginController,
     logoutController,
     refreshController,
-    registerController
+    registerController, sessionsController
 } from "../controllers/auth.controller.js";
 import {checkSchema} from "express-validator";
 import {loginSchema, logoutSchema, registerSchema} from "../utils/validation-schema.js";
@@ -15,5 +15,6 @@ router.post("/login", checkSchema(loginSchema), handleValidationError, loginCont
 router.post("/register", checkSchema(registerSchema), handleValidationError, registerController);
 router.post("/refresh", refreshController);
 router.post("/logout", checkSchema(logoutSchema), logoutController);
+router.get("/sessions", sessionsController);
 
 export default router;
