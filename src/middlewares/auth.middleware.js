@@ -1,8 +1,9 @@
-import {comparePassword, isValidToken, parseToken} from "../utils/auth.utils.js";
+import {isValidToken, parseToken} from "../utils/auth.utils.js";
 import debug from "debug";
 import User from "../models/user.model.js";
 import Session, {SessionStatus} from "../models/session.model.js";
 import {RestBean} from "../entities/vo.entities.js";
+import {comparePassword} from "../utils/crypt.utils.js";
 
 const ANONYMOUS_PATH = [
     "/api/auth/login",
@@ -24,7 +25,7 @@ export async function authBots(req, res, next) {
     // decode token
     try {
         // decode base64
-        const decodedToken = Buffer.from(botToken, 'base64').toString('utf-8');
+        const decodedToken = atob(botToken);
         const tokenData = JSON.parse(decodedToken);
         const {id, token} = tokenData
         // find user

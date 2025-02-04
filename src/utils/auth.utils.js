@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import geoip from "geoip-lite";
 import Session, {Platforms} from "../models/session.model.js";
 import mongoose from "mongoose";
@@ -14,27 +13,6 @@ export function generateAccessToken(session) {
     return jwt.sign({
         session: session.id
     }, JWT_SECRET, {expiresIn: 7 * 24 * 60 * 60});
-}
-
-/**
- * Encrypt a password
- *
- * @param {String} rawPassword
- * */
-export async function hashPassword(rawPassword) {
-    const saltRounds = parseInt(process.env.SALT_ROUNDS, 10);
-    return await bcrypt.hash(rawPassword, saltRounds);
-}
-
-/**
- * Compare passwords
- *
- * @param {String} rawPassword
- * @param {String} encodedPassword
- * @return {Promise<boolean>}
- * */
-export async function comparePassword(rawPassword, encodedPassword) {
-    return await bcrypt.compare(rawPassword, encodedPassword);
 }
 
 /**

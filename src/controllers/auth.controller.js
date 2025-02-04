@@ -1,9 +1,7 @@
 import User, {UserRoles} from "../models/user.model.js";
 import {
-    comparePassword,
     findAllSessions,
     generateAccessToken,
-    hashPassword,
     resolveLocation,
     resolvePlatform,
     tokenResponse
@@ -12,6 +10,7 @@ import debug from "debug";
 import Session, {SessionStatus} from "../models/session.model.js";
 import {RestBean} from "../entities/vo.entities.js";
 import moment from "moment";
+import {comparePassword, hashPassword} from "../utils/crypt.utils.js";
 
 const log = debug('qbychat:controllers:user');
 

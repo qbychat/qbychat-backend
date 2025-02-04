@@ -2,6 +2,7 @@ import debug from "debug";
 import User, {UserRoles} from "../models/user.model.js";
 import mongoose from "mongoose";
 import {RestBean} from "../entities/vo.entities.js";
+import {generateBotToken, hashPassword} from "../utils/crypt.utils.js";
 
 const log = debug('qbychat:controllers:bot');
 
@@ -47,10 +48,10 @@ export async function createBotController(req, res) {
         return res.status(409).send(RestBean.error(409, 'Username was taken by another bot'));
     }
     // create the bot user
-    const botToken = ''
+    const botToken = await generateBotToken();
     const bot = await User.create({
         username: username,
-        password: botToken,
+        password: await hashPassword(botToken),
         nickname: username,
         bio: null,
         roles: [
@@ -61,5 +62,15 @@ export async function createBotController(req, res) {
         botOwner: user
     });
 
-    // todo response bot data
+    const tokenJson = {
+        id: bot.id,
+        token: botToken
+    }
+
+    const tokenString = btoa(JSON.stringify(tokenJson));
+    res.status(200).send(RestBean.success({
+        id: bot.id,
+        username: username,
+        token: tokenString
+    }));
 }

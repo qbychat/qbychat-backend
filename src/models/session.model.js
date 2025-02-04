@@ -7,8 +7,7 @@ export const Platforms = Object.freeze({
     IOS: 3,
     LINUX: 4,
     WINDOWS: 5,
-    MACOS: 6,
-    BOT: 7 // qbychat bots
+    MACOS: 6
 });
 
 export const SessionStatus = Object.freeze({
