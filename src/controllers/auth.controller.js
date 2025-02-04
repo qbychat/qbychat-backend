@@ -138,6 +138,7 @@ export async function logoutController(req, res) {
  * */
 export async function sessionsController(req, res) {
     const sessions = await findAllSessions(req.user);
+    const currentSession = req.session;
     res.send(RestBean.success(sessions
         .filter(session => session.status === SessionStatus.VALID)
         .map((session) => {
@@ -146,6 +147,7 @@ export async function sessionsController(req, res) {
             location: session.location,
             platform: session.platform,
             timestamp: session.createAt,
+            current: session.id === currentSession.id
         }
     })));
 }

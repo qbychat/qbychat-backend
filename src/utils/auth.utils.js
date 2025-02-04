@@ -127,7 +127,7 @@ export function tokenResponse(token, session, user) {
 }
 
 /**
- * @return {[Session]} sessions list
+ * @return {Promise<[Session]>} sessions list
  * */
 export async function findAllSessions(user) {
     return Session.find({user: new mongoose.Types.ObjectId(user.id)});
