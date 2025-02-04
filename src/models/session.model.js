@@ -30,6 +30,7 @@ const SessionSchema = new mongoose.Schema({
         enum: Object.values(SessionStatus),
         required: true,
     }
+    // todo lastseen
 }, { timestamps: true });
 
 const Session = mongoose.model("Session", SessionSchema);

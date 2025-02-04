@@ -85,7 +85,7 @@ export function resolveLocation(req) {
     if (!location.city) {
         return location.country;
     }
-    return `${location.country}/${location.city}`
+    return `${location.country}, ${location.city}`
 }
 
 export function resolvePlatform(userAgent) {
