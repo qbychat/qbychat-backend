@@ -3,12 +3,14 @@ import {
     comparePassword,
     generateAccessToken,
     hashPassword,
-    parseToken,
     resolveLocation,
-    resolvePlatform
+    resolvePlatform,
+    tokenResponse
 } from "../utils/auth.utils.js";
 import debug from "debug";
 import Session, {SessionStatus} from "../models/session.model.js";
+import {RestBean} from "../entities/vo.entities.js";
+import moment from "moment";
 
 const log = debug('qbychat:controllers:user');
 
@@ -37,24 +39,7 @@ export async function loginController(req, res) {
     })
     const token = generateAccessToken(session);
     log(`User ${user.username} logged in`);
-    // decode token
-    const decodedToken = parseToken(token);
-    res.send({
-        code: 200,
-        data: {
-            token: token,
-            user: {
-                id: user.id,
-                username: user.username,
-            },
-            session: {
-                id: session.id,
-                location: session.location
-            },
-            expire: decodedToken.exp
-        },
-        message: 'Success'
-    });
+    res.send(RestBean.success(tokenResponse(token, session, user)));
 }
 
 /**
@@ -101,21 +86,37 @@ export async function refreshController(req, res) {
     const session = req.session;
     const token = generateAccessToken(session);
     log(`User ${user.username} regenerated it's token.`)
-    res.send({
-        code: 200,
-        data: {
-            token: token,
-            id: user.id,
-            username: user.username
-        },
-        message: 'Success'
-    });
+    res.send(RestBean.success(tokenResponse(token, session, session.user)))
 }
 
 /**
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  * */
-export function logoutController(req, res) {
-
+export async function logoutController(req, res) {
+    const {session: anotherSessionId} = req.body;
+    const currentSession = req.session;
+    let targetSession = currentSession;
+    if (anotherSessionId && anotherSessionId !== currentSession.id) {
+        const currentSessionCreateAt = moment(currentSession.createdAt);
+        const canTerminateOtherSessions = moment().diff(currentSessionCreateAt, "hours") < 4
+        if (!canTerminateOtherSessions) {
+            return res.status(403).send(RestBean.error(403, 'Your session needs to last at least four hours before you can end other sessions.'));
+        }
+        // This user wants to end the session logged in from other clients
+        // find session
+        targetSession = await Session.findById(anotherSessionId)
+            .populate('user');
+        if (!targetSession) {
+            return res.status(401).send(RestBean.error(400, 'Session not found'));
+        }
+        if (targetSession.user.id !== currentSession.user.id) {
+            // This is someone else's session
+            return res.status(403).send(RestBean.error(403, 'You have no permission to terminate this session.'));
+        }
+    }
+    log(`Session ${targetSession} was terminated. (User ${targetSession.user.username})`);
+    // delete session
+    await targetSession.deleteOne();
+    res.send(RestBean.success());
 }

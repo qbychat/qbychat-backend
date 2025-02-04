@@ -11,6 +11,6 @@ const log = debug('qbychat:http');
  * @param {express.NextFunction} next
  * */
 export const requestLogger = (req, res, next) => {
-    log(`[${req.method.toUpperCase()}] ${req.protocol}://${req.hostname}${req.path}`);
+    log(`[${req.method.toUpperCase()}] ${req.path}`);
     next();
 }

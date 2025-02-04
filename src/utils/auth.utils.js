@@ -108,3 +108,19 @@ export function resolvePlatform(userAgent) {
         return Platforms.UNKNOWN;
     }
 }
+
+export function tokenResponse(token, session, user) {
+    const decodedToken = parseToken(token);
+    return {
+        token: token,
+        user: {
+            id: user.id,
+            username: session.user.username,
+        },
+        session: {
+            id: session.id,
+            location: session.location
+        },
+        expire: decodedToken.exp
+    }
+}
