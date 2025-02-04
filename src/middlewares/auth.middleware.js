@@ -2,6 +2,7 @@ import {comparePassword, isValidToken, parseToken} from "../utils/auth.utils.js"
 import debug from "debug";
 import User from "../models/user.model.js";
 import Session, {SessionStatus} from "../models/session.model.js";
+import {RestBean} from "../entities/vo.entities.js";
 
 const ANONYMOUS_PATH = [
     "/api/auth/login",
@@ -29,36 +30,20 @@ export async function authBots(req, res, next) {
         // find user
         const user = await User.findById(id);
         if (!user || !user.bot) {
-            return res.status(401).send({
-                code: 401,
-                message: 'Bot does not exist',
-                data: null
-            });
+            return res.status(401).send(RestBean.error(401, 'Bot does not exist'));
         }
         // compare token
         if (!await comparePassword(token, user.password)) {
-            return res.status(401).send({
-                code: 401,
-                message: 'Bad token',
-                data: null
-            });
+            return res.status(401).send(RestBean.error(401, 'Bad token'));
         }
         if (req.path.startsWith("/api/auth")) {
-            return res.status(400).send({
-                code: 400,
-                message: 'Bots should not use this API',
-                data: null
-            });
+            return res.status(400).send(RestBean.error(400, 'Bots should not use this API'));
         }
         // valid token
         req.user = user;
         next();
     } catch (err) {
-        res.send(401).send({
-            code: 401,
-            message: 'Failed to decode bot token',
-            data: null
-        })
+        res.send(401).send(RestBean.error(401, 'Failed to decode bot token'))
     }
 }
 
@@ -77,22 +62,14 @@ export async function auth(req, res, next) {
     // resolve token
     const token = req.header("Authorization");
     if (token === null || !isValidToken(token)) {
-        return res.status(401).send({
-            code: 401,
-            data: null,
-            message: "Unauthorized"
-        })
+        return res.status(401).send(RestBean.error(401, 'Unauthorized'));
     }
     // put the user object to req
     const parsedToken = parseToken(token);
     const session = await Session.findById(parsedToken.session)
         .populate('user');
     if (!session || session.status !== SessionStatus.VALID) {
-        return res.status(401).send({
-            code: 401,
-            message: 'Session expired',
-            data: null
-        })
+        return res.status(401).send(RestBean.error(401, 'Session expired'));
     }
     req.user = session.user;
     req.session = session;
