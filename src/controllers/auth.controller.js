@@ -108,7 +108,7 @@ export async function logoutController(req, res) {
     let targetSession = currentSession;
     if (anotherSessionId && anotherSessionId !== currentSession.id) {
         const currentSessionCreateAt = moment(currentSession.createdAt);
-        const canTerminateOtherSessions = moment().diff(currentSessionCreateAt, "hours") < 4
+        const canTerminateOtherSessions = moment().diff(currentSessionCreateAt, "hours") >= 4
         if (!canTerminateOtherSessions) {
             return res.status(403).send(RestBean.error(403, 'Your session needs to last at least four hours before you can end other sessions.'));
         }
