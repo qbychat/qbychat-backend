@@ -18,7 +18,7 @@ export const SessionStatus = Object.freeze({
 });
 
 const SessionSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     location: String,
     platform: {
         type: Number,
@@ -30,7 +30,7 @@ const SessionSchema = new mongoose.Schema({
         enum: Object.values(SessionStatus),
         required: true,
     }
-});
+}, { timestamps: true });
 
 const Session = mongoose.model("Session", SessionSchema);
 

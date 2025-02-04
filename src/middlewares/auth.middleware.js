@@ -1,10 +1,11 @@
 import {comparePassword, isValidToken, parseToken} from "../utils/auth.utils.js";
 import debug from "debug";
 import User from "../models/user.model.js";
+import Session, {SessionStatus} from "../models/session.model.js";
 
 const ANONYMOUS_PATH = [
-    "/api/user/login",
-    "/api/user/register"
+    "/api/auth/login",
+    "/api/auth/register"
 ]
 
 const log = debug('qbychat:security')
@@ -42,6 +43,13 @@ export async function authBots(req, res, next) {
                 data: null
             });
         }
+        if (req.path.startsWith("/api/auth")) {
+            return res.status(400).send({
+                code: 400,
+                message: 'Bots should not use this API',
+                data: null
+            });
+        }
         // valid token
         req.user = user;
         next();
@@ -62,7 +70,7 @@ export async function authBots(req, res, next) {
  * @param {import('express').NextFunction} next
  * */
 export async function auth(req, res, next) {
-    if (req.path in ANONYMOUS_PATH || req.user !== null) {
+    if (ANONYMOUS_PATH.includes(req.path) || req.user) {
         // anonymous or already authed
         return next();
     }
@@ -77,6 +85,16 @@ export async function auth(req, res, next) {
     }
     // put the user object to req
     const parsedToken = parseToken(token);
-    req.user = await User.findById(parsedToken.id);
+    const session = await Session.findById(parsedToken.session)
+        .populate('user');
+    if (!session || session.status !== SessionStatus.VALID) {
+        return res.status(401).send({
+            code: 401,
+            message: 'Session expired',
+            data: null
+        })
+    }
+    req.user = session.user;
+    req.session = session;
     next(); // continue
 }

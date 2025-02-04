@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 export function generateAccessToken(session) {
     return jwt.sign({
         session: session.id
-    }, JWT_SECRET, { expiresIn: 7 * 24 * 60 * 60 });
+    }, JWT_SECRET, {expiresIn: 7 * 24 * 60 * 60});
 }
 
 /**
@@ -71,12 +71,20 @@ export function parseToken(token) {
  * */
 export function resolveLocation(req) {
     const usedProxy = process.env.RELAY === 'true';
+    let ip;
     if (!usedProxy) {
-        return geoip.lookup(req.ip);
+        ip = req.ip;
     } else {
-        const ip = req.header('X-Real-IP');
-        return geoip.lookup(req.ip);
+        ip = req.header('X-Real-IP');
     }
+    const location = geoip.lookup(ip);
+    if (!location) {
+        return "Internal Address";
+    }
+    if (!location.city) {
+        return location.country;
+    }
+    return `${location.country}/${location.city}`
 }
 
 export function resolvePlatform(userAgent) {

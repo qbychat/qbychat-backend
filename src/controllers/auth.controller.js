@@ -1,9 +1,9 @@
-import express from 'express';
 import User from "../models/user.model.js";
 import {
     comparePassword,
     generateAccessToken,
     hashPassword,
+    parseToken,
     resolveLocation,
     resolvePlatform
 } from "../utils/auth.utils.js";
@@ -27,13 +27,6 @@ export async function loginController(req, res) {
             data: null
         })
     }
-    if (user.bot) {
-        return res.status(400).send({
-            code: 400,
-            message: 'Bots should not use this API to log in',
-            data: null
-        })
-    }
     // generate jwt
     // create session object
     const session = await Session.create({
@@ -44,12 +37,21 @@ export async function loginController(req, res) {
     })
     const token = generateAccessToken(session);
     log(`User ${user.username} logged in`);
+    // decode token
+    const decodedToken = parseToken(token);
     res.send({
         code: 200,
         data: {
             token: token,
-            id: user.id,
-            username: user.username
+            user: {
+                id: user.id,
+                username: user.username,
+            },
+            session: {
+                id: session.id,
+                location: session.location
+            },
+            expire: decodedToken.exp
         },
         message: 'Success'
     });
@@ -89,8 +91,31 @@ export async function registerController(req, res) {
     })
 }
 
+/**
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * */
 export async function refreshController(req, res) {
-    // generate a new jwt key
     const user = req.user;
-    // regenerate token
+    // regenerate token with session
+    const session = req.session;
+    const token = generateAccessToken(session);
+    log(`User ${user.username} regenerated it's token.`)
+    res.send({
+        code: 200,
+        data: {
+            token: token,
+            id: user.id,
+            username: user.username
+        },
+        message: 'Success'
+    });
+}
+
+/**
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * */
+export function logoutController(req, res) {
+
 }
