@@ -11,6 +11,7 @@ import Session, {SessionStatus} from "../models/session.model.js";
 import {RestBean} from "../entities/vo.entities.js";
 import moment from "moment";
 import {comparePassword, hashPassword} from "../utils/crypt.utils.js";
+import mongoose from "mongoose";
 
 const log = debug('qbychat:controllers:user');
 
@@ -143,14 +144,14 @@ export async function sessionsController(req, res) {
     res.send(RestBean.success(sessions
         .filter(session => session.status === SessionStatus.VALID)
         .map((session) => {
-        return {
-            id: session.id,
-            location: session.location,
-            platform: session.platform,
-            timestamp: session.createAt,
-            current: session.id === currentSession.id
-        }
-    })));
+            return {
+                id: session.id,
+                location: session.location,
+                platform: session.platform,
+                timestamp: session.createAt,
+                current: session.id === currentSession.id
+            }
+        })));
 }
 
 /**
@@ -160,7 +161,7 @@ export async function sessionsController(req, res) {
  * @param {import('express').Response} res
  * */
 export async function resetPasswordController(req, res) {
-    const { password, newPassword } = req.body;
+    const {password, newPassword} = req.body;
     // assert old password
     /**
      * @type {User} user
@@ -176,5 +177,7 @@ export async function resetPasswordController(req, res) {
     log(`Updated password for user ${user.username}`);
     user.password = await hashPassword(newPassword);
     await user.save();
+    // log out all sessions
+    await Session.deleteMany({user: new mongoose.Types.ObjectId(user.id)})
     res.send(RestBean.success());
 }
