@@ -152,3 +152,29 @@ export async function sessionsController(req, res) {
         }
     })));
 }
+
+/**
+ * Reset password
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * */
+export async function resetPasswordController(req, res) {
+    const { password, newPassword } = req.body;
+    // assert old password
+    /**
+     * @type {User} user
+     * */
+    const user = req.user;
+    if (!await comparePassword(password, user.password)) {
+        return res.status(403).send(RestBean.error(403, 'Your old password does not match'));
+    }
+    if (password === newPassword) {
+        return res.status(400).send(RestBean.error(400, 'The new password should not match the old password.'));
+    }
+    // update new password
+    log(`Updated password for user ${user.username}`);
+    user.password = await hashPassword(newPassword);
+    await user.save();
+    res.send(RestBean.success());
+}

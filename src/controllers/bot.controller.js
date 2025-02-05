@@ -45,7 +45,7 @@ export async function createBotController(req, res) {
     const user = req.user;
     // check the username is available
     if (await User.exists({username: username})) {
-        return res.status(409).send(RestBean.error(409, 'Username was taken by another bot'));
+        return res.status(409).send(RestBean.error(409, 'Username was taken'));
     }
     // create the bot user
     const botToken = await generateBotToken();
@@ -59,7 +59,7 @@ export async function createBotController(req, res) {
         ],
 
         bot: true,
-        botOwner: user
+        botOwner: user.id
     });
 
     const tokenJson = {
@@ -73,4 +73,8 @@ export async function createBotController(req, res) {
         username: username,
         token: tokenString
     }));
+}
+
+export async function deleteBotController() {
+
 }

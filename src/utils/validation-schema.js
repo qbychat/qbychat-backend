@@ -43,3 +43,15 @@ export const createBotSchema = {
         errorMessage: 'Username must contain only letters, numbers, underscores, and end with \'_bot\''
     }
 }
+
+
+export const resetPasswordSchema = {
+    password: {
+        notEmpty: true,
+        errorMessage: 'Password should not be empty'
+    },
+    newPassword: {
+        notEmpty: true,
+        errorMessage: 'New password should not be empty'
+    }
+}
