@@ -3,6 +3,8 @@ import User, {UserRoles} from "../models/user.model.js";
 import mongoose from "mongoose";
 import {RestBean} from "../entities/vo.entities.js";
 import {generateBotToken, hashPassword} from "../utils/crypt.utils.js";
+import req from "express/lib/request.js";
+import res from "express/lib/response.js";
 
 const log = debug('qbychat:controllers:bot');
 
@@ -75,6 +77,25 @@ export async function createBotController(req, res) {
     }));
 }
 
-export async function deleteBotController() {
-
+/**
+ * Delete a bot
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * */
+export async function deleteBotController(req, res) {
+    const { bot: botId } = req.body;
+    const user = req.user;
+    // find bot obj
+    const botUser = await User.findById(botId);
+    if (!botUser || !botUser.bot) {
+        return res.status(404).send(RestBean.error(404, 'Bot not found'));
+    }
+    if (!botUser.botOwner.equals(user.id)) {
+        return res.status(403).send(RestBean.error(403, 'You have no permission to delete this bot'));
+    }
+    // delete bot
+    log(`Bot ${botId} (${botUser.username}) deleted`);
+    await botUser.deleteOne();
+    return res.status(200).send(RestBean.success())
 }

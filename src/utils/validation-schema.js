@@ -55,3 +55,10 @@ export const resetPasswordSchema = {
         errorMessage: 'New password should not be empty'
     }
 }
+
+export const deleteBotSchema = {
+    bot: {
+        notEmpty: true,
+        errorMessage: 'Bot id should not be empty'
+    }
+}
