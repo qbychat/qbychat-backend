@@ -77,6 +77,10 @@ export async function createBotController(req, res) {
     }));
 }
 
+async function findBot(req) {
+
+}
+
 /**
  * Delete a bot
  *
@@ -98,4 +102,37 @@ export async function deleteBotController(req, res) {
     log(`Bot ${botId} (${botUser.username}) deleted`);
     await botUser.deleteOne();
     return res.status(200).send(RestBean.success())
+}
+
+/**
+ * Reset bot token
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * */
+export async function resetBotTokenController(req, res) {
+    const { bot: botId } = req.body;
+    const user = req.user;
+    // find bot obj
+    const botUser = await User.findById(botId);
+    if (!botUser || !botUser.bot) {
+        return res.status(404).send(RestBean.error(404, 'Bot not found'));
+    }
+    if (!botUser.botOwner.equals(user.id)) {
+        return res.status(403).send(RestBean.error(403, 'You have no permission to delete this bot'));
+    }
+    // reset its token
+    const botToken = await generateBotToken();
+    botUser.password = await hashPassword(botToken);
+    await botUser.save();
+    const tokenJson = {
+        id: botUser.id,
+        token: botToken
+    };
+    const tokenString = btoa(JSON.stringify(tokenJson));
+    res.status(200).send(RestBean.success({
+        id: bot.id,
+        username: username,
+        token: tokenString
+    }));
 }
